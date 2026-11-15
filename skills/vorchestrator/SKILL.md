@@ -51,35 +51,35 @@ Do NOT activate for:
 | Signal | Action | Model |
 |:---|:---|:---|
 | 1-2 tool calls, trivial | Execute directly, no subagent | Current model |
-| Read-only recon, file listing, status check | Spawn Scout | `flash_lite` |
-| Standard edits, bug fix, doc update | Spawn Worker | `flash` |
-| Multi-file refactor, architecture, complex debug | Spawn Architect | `pro` or Claude |
-| 2+ worker failures, complexity spike, ambiguity | Spawn Coordinator Successor | `pro` or Claude |
-| Quota approaching limit on current provider | Switch to alternate provider pool | Opposite pool |
+| Read-only recon, file listing, status check | Spawn Scout | `Gemini 3.8 Flash` (`invoke_subagent`: `flash_lite` / `swarm`: `gemini-3.8-flash-low`) |
+| Standard edits, bug fix, doc update | Spawn Worker | `Gemini 4 Hydrogen` (`invoke_subagent`: `flash` / `swarm`: `gemini-4-hydrogen-medium`) |
+| Multi-file refactor, architecture, complex debug | Spawn Architect | `Gemini 4 Argon` (`invoke_subagent`: `pro` / `swarm`: `gemini-4-argon-high`) or Claude (`Claude Sonnet 5.5` / `Claude Opus 5.5`, `inherit`) |
+| 2+ worker failures, complexity spike, ambiguity | Spawn Coordinator Successor | `Orchestrator (Argon)` (`gemini-pro-orchestrator-g1-pro`), `Gemini 4 Argon` (`pro`), or `Claude Opus 5.5` (`inherit`) |
+| Quota approaching limit on current provider | Switch to alternate provider pool | Opposite pool (Gemini ↔ Claude) |
 
 ## Quota Balancing Protocol
 
 1. Track mental estimate of tokens consumed this session per provider.
-2. If approaching perceived rate limit on Gemini → route next subagent to Claude.
-3. If approaching perceived rate limit on Claude → route next subagent to Gemini.
-4. Orchestrator itself should run on cheapest viable model (flash preferred).
+2. If approaching perceived rate limit on Gemini → route next subagent to Claude (`Claude Sonnet 5.5` / `Claude Opus 5.5`).
+3. If approaching perceived rate limit on Claude → route next subagent to Gemini (`Gemini 3.8 Flash` / `Gemini 4 Hydrogen` / `Gemini 4 Argon`).
+4. Orchestrator itself should run on cheapest viable model (`Gemini 3.8 Flash` or `Gemini 4 Hydrogen` preferred).
 
 ## Worker Agent Definitions
 
 ### Scout Agent
-- **Model**: `flash_lite`
+- **Model**: `Gemini 3.8 Flash` (`invoke_subagent`: `flash_lite`, Effort: `Low`; `swarm`: `gemini-3.8-flash-low`)
 - **Tools**: Read-only (`enable_write_tools: false`, `enable_mcp_tools: true`)
 - **MCP Config**: `scout` (loads ONLY `codegraph`)
 - **System prompt**: "Return terse factual summary. No edits. No suggestions unless asked."
 
 ### Worker Agent
-- **Model**: `flash`
+- **Model**: `Gemini 4 Hydrogen` (`invoke_subagent`: `flash`, Effort: `Medium`; `swarm`: `gemini-4-hydrogen-medium` or `gemini-4-hydrogen-high`)
 - **Tools**: Full write access (`enable_write_tools: true`, `enable_mcp_tools: true`)
 - **MCP Config**: `worker` (loads ONLY `toon`)
 - **System prompt**: "Execute task surgically. Return diff summary and verification result."
 
 ### Architect Agent
-- **Model**: `pro` or Claude (`inherit` when parent is Claude)
+- **Model**: `Gemini 4 Argon` (`invoke_subagent`: `pro`, Effort: `High`; `swarm`: `gemini-4-argon-high`) or `Claude Sonnet 5.5` / `Claude Opus 5.5` (`inherit` when parent is Claude)
 - **Tools**: Full write access + MCP tools (`enable_write_tools: true`, `enable_mcp_tools: true`)
 - **MCP Config**: `architect` (loads all: `codegraph`, `context-mode`, `toon`)
 - **System prompt**: "Analyze thoroughly. Propose approach before executing. Verify with tests."

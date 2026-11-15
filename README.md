@@ -14,10 +14,10 @@ A token-efficient, self-scaling multi-agent orchestration plugin for the Google 
 4. **Limits Context Window Bloat** using dynamic Tool Schema Pruning and compact payload state handoffs.
 5. **Escalates Automatically** through a 5-tier ladder:
    - **T0 (Direct)**: Trivial tasks (1-2 tools).
-   - **T1 (Scout)**: `flash_lite` read-only recon agent.
-   - **T2 (Worker)**: `flash` surgical editing agent.
-   - **T3 (Architect)**: `pro` or Claude complex reasoning agent.
-   - **T4 (Successor)**: `pro` or Claude orchestration coordinator taking over on failure/bloat.
+   - **T1 (Scout)**: `Gemini 3.8 Flash` (`flash_lite`, Low effort) read-only recon agent.
+   - **T2 (Worker)**: `Gemini 4 Hydrogen` (`flash`, Medium effort) surgical editing agent.
+   - **T3 (Architect)**: `Gemini 4 Argon` (`pro`, High effort) or Claude (`Claude Sonnet 5.5` / `Claude Opus 5.5`) complex reasoning agent.
+   - **T4 (Successor)**: `Orchestrator (Argon)` (`gemini-pro-orchestrator-g1-pro`), `Gemini 4 Argon` (`pro`), or `Claude Opus 5.5` orchestration coordinator taking over on failure/bloat.
    - **T5 (`/teamwork-preview`)**: Massive greenfield projects (full parallel autonomous team).
 
 ## Plugin Structure
